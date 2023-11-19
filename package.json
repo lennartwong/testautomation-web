@@ -4,6 +4,7 @@
     "selenium-webdriver": "^4.15.0"
   },
   "scripts": {
+    "build": "",
     "uitest": "mocha",
     "unittest": "jasmine"
   },
