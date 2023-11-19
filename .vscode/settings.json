@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "undefined/subscriptions/2bebe237-0b9d-4d2c-9a8e-8034ed073344/resourceGroups/lenyywong_rg_0926/providers/Microsoft.Web/sites/testautomation-web",
+    "appService.deploySubpath": "."
+}
