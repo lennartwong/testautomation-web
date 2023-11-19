@@ -4,6 +4,10 @@
     "selenium-webdriver": "^4.15.0"
   },
   "scripts": {
-    "test": "mocha"
+    "uitest": "mocha",
+    "unittest": "jasmine"
+  },
+  "devDependencies": {
+    "jasmine": "^5.1.0"
   }
 }

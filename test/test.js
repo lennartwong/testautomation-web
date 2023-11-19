@@ -1,11 +1,14 @@
 const {By, Builder} = require('selenium-webdriver');
 const assert = require("assert");
 
-async function LoadPage()
+// Launch browser and load index.html
+// param:
+// browser - browser type, such as chrome, firefox, etc
+async function LoadPage(browser)
 {
   try
   {
-    driver = await new Builder().forBrowser('chrome').build();
+    driver = await new Builder().forBrowser(browser).build();
     await driver.get('file:///C:/Users/lenyy/Documents/Code/GitHub/testautomation-web/index.html');
   }
   catch (e)
@@ -14,11 +17,16 @@ async function LoadPage()
   }
 }
 
+// Close browser
 async function CloseBrowser()
 {
   await driver.quit();
 }
 
+// Attempt to login using provided email and password
+// param: 
+// enterEmail - user email address
+// enterPassword - user password
 async function LoginAttempt(enterEmail, enterPassword) 
 {
   try {
@@ -37,6 +45,7 @@ async function LoginAttempt(enterEmail, enterPassword)
   } 
 }
 
+// Attempt to log out user
 async function LogoutAttempt() 
 {
   try 
@@ -50,6 +59,7 @@ async function LogoutAttempt()
   }
 }
 
+// Click the user icon so that we can see the logout button
 async function ClickUserIcon()
 {
   try
@@ -63,7 +73,9 @@ async function ClickUserIcon()
   }
 }
 
-async function VerifyContentDisplay(expected)
+// Assert the content display style
+// Note: Current purpose is to determine if the content is show or not .
+async function AssertContentDisplay(expected)
 {
   let content = await driver.findElement(By.id('content'));
   let style = await content.getAttribute('style');
@@ -71,7 +83,8 @@ async function VerifyContentDisplay(expected)
   assert.equal(expected, style);
 }
 
-async function VerifyLogOutDisplay(expected)
+// Assert the LogOut button is displaying
+async function AssertLogOutDisplay(expected)
 {
   let logout = await driver.findElement(By.className('logout'));
   let style = await logout.getAttribute('style');
@@ -79,54 +92,74 @@ async function VerifyLogOutDisplay(expected)
   assert.ok(style.indexOf("display: flex;") >= 0)
 }
 
-describe('UI Tests', function () 
+// Following are the tests.  Each test will run 3 times for each supported browser.
+// Current tests:
+// - Login with valid credential
+// - Login with invalid credential (valid password but invalid email)
+// - Login with invalid credential (valid email but invalid password)
+// - Clicking user icon should display logout button
+// - Clicking Logout should log user out
+
+inputs = 
+[
+  {'browser': 'chrome'},
+  {'browser': 'firefox'},
+  {'browser': 'MicrosoftEdge'}
+]
+inputs.forEach(function(input) 
 {
-  describe('Login Tests', function () 
+  describe('UI Tests', function () 
   {
-    it('should display content with valid credential', async () =>  
+    
+    this.timeout(5000);
+  
+    beforeEach(async () =>
     {
-      await LoadPage();
-      await LoginAttempt('admin@admin.com', '2020');
-      await VerifyContentDisplay('display: flex;')
+      await LoadPage(input.browser);
+    });
+  
+    afterEach(async () =>
+    {
       await CloseBrowser();
     });
-
-    it('should NOT display content with invalid user email', async () =>
+  
+    describe('Login Tests', function () 
     {
-      await LoadPage();
-      await LoginAttempt('badadmin@admin.com', '2020');
-      await VerifyContentDisplay('display: none;')
-      await CloseBrowser();
+      it('should display content with valid credential', async () =>  
+      {
+        await LoginAttempt('admin@admin.com', '2020');
+        await AssertContentDisplay('display: flex;')
+      });
+  
+      it('should NOT display content with invalid user email', async () =>
+      {
+        await LoginAttempt('badadmin@admin.com', '2020');
+        await AssertContentDisplay('display: none;')
+      });
+  
+      it('should NOT display content with invalid password', async () =>
+      {
+        await LoginAttempt('admin@admin.com', 'bad password');
+        await AssertContentDisplay('display: none;')
+      });
     });
-
-    it('should NOT display content with invalid password', async () =>
+  
+    describe('Logout Tests', function ()
     {
-      await LoadPage();
-      await LoginAttempt('admin@admin.com', 'bad password');
-      await VerifyContentDisplay('display: none;')
-      await CloseBrowser();
-    });
-  });
-
-  describe('Logout Tests', function ()
-  {
-    it('should display logout button when user icon is clicked', async () =>
-    {
-      await LoadPage();
-      await LoginAttempt('admin@admin.com', '2020');
-      await ClickUserIcon();
-      await VerifyLogOutDisplay();
-      await CloseBrowser();
-    });
-
-    it('should go back to home when log out', async () =>
-    {
-      await LoadPage();
-      await LoginAttempt('admin@admin.com', '2020');
-      await ClickUserIcon();
-      await LogoutAttempt();
-      await VerifyContentDisplay('display: none;')
-      await CloseBrowser();
+      it('should display logout button when user icon is clicked', async () =>
+      {
+        await LoginAttempt('admin@admin.com', '2020');
+        await ClickUserIcon();
+        await AssertLogOutDisplay();
+      });
+  
+      it('should go back to home when log out', async () =>
+      {
+        await LoginAttempt('admin@admin.com', '2020');
+        await ClickUserIcon();
+        await LogoutAttempt();
+        await AssertContentDisplay('display: none;')
+      });
     });
   });
 });
